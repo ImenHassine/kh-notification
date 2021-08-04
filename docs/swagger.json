@@ -1,0 +1,21 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Web service wallet and catalog",
+    "description": "My web service wallet and catalog API"
+  },
+  "host": "localhost:5000",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "SERVICE Catalog",
+      "description": "API for catalog"
+    }
+  ],
+  "schemes": ["http"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": { 
+  }
+}
