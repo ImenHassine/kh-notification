@@ -1,3 +1,13 @@
+## À propos
+
+Ce serveur externe est également nécessaire pour gérer les notifications en temps réel avec socket.io .
+Chaque notification doit indique l'(le groupe d') utilisateur(s) qui va recevoir les notifications.
+
+## About Project
+
+This external server is also needed to manage real-time notifications with socket.io.
+Each notification must indicate the user (s) who will receive the notifications.
+
 ## Available Scripts
 
 In the project directory, you can run:
