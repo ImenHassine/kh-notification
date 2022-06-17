@@ -241,31 +241,30 @@ io.on('connection', (socket) => { //when refresh fenetre create new socket
       }
     }
     //////////////////save notification//////////////////
-
-      var notificationJson = {
-      // userIdFrom: msg.userIdFrom,
-      // userIdTo: msg.userIdTo,
-      userIdFrom:msg.userIdFrom,
-      socketId: msg.socketId,
-      sockdddetId: msg.sockdddetId,
-      topic: msg.topic,
-      count:userCount,
-      // date:msg.date,
-      message: msg.message
-  
-    }
-    console.log(msg)
-    console.log("notificationJson",notificationJson)
-    console.log("socket.id",socket.id)
-  //user connected or not connected will save the notification 
-    Notification.create(notificationJson);
-
     const infoArr = [];
     for(var i = 0; i < allUsers.length; i++ ){
-      if(allUsers[i].userId !== notificationJson.userIdFrom){ 
+      if(allUsers[i].userId !== msg.userIdFrom){ 
+        var notificationJson = {
+          // userIdFrom: msg.userIdFrom,
+          userIdTo: allUsers[i].userId,
+          userIdFrom:msg.userIdFrom,
+          socketId: msg.socketId,
+          sockdddetId: msg.sockdddetId,
+          topic: msg.topic,
+          count:userCount,
+          // date:msg.date,
+          message: msg.message
+      
+        }
+        console.log(msg)
+        console.log("notificationJson",notificationJson)
+        console.log("socket.id",socket.id)
+      //user connected or not connected will save the notification 
+        Notification.create(notificationJson);
         var count = allUsers[i].count++
         notificationJson.count = count
         infoArr.push(allUsers[i]);
+
         socket.broadcast.to(allUsers[i].socketId).emit( 'notification from server', notificationJson );
       }
     }
@@ -276,7 +275,9 @@ io.on('connection', (socket) => { //when refresh fenetre create new socket
           [Op.and]: [{ deleted: 0 ,userIdTo: infoArr[i].userId ,read:false}] },
         attributes: { exclude: ["deleted", "deletedBy"] },
       }).then((dataNotif) => {
-        var count = dataNotif.count
+        var count = dataNotif.count;
+        console.log("socketID",socketID)
+
         socket.broadcast.to(socketID).emit( 'count notification', count);
 
         // socket.broadcast.emit('count notification', count);
