@@ -27,6 +27,10 @@
       var messages = document.getElementById('messages');
       var form = document.getElementById('form');
       var input = document.getElementById('input');
+      console.log("notification from server",window.location.href)
+      console.log("notification from server",window.location.href.split('/')[3])
+
+
       // socket.emit('send socketId', {
       //       socketIdf:io().id,
       //       name:"11111",
@@ -37,17 +41,20 @@
       // socket.emit('connection', {
       //       userId: window.location.href.split('/')[3],
       //     })
+      console.log("---------------send userId")
+
       socket.emit('send userId',window.location.href.split('/')[3] )
+
       form.addEventListener('submit', function(e) {
         e.preventDefault();
         if (input.value) {
-          socket.emit('send socketId', {
-            socketId:socket.id,
-            userId: window.location.href.split('/')[3],
+          // socket.emit('send socketId', {
+          //   socketId:socket.id,
+          //   userId: window.location.href.split('/')[3],
 
-          })
+          // })
 
-          socket.emit('notificationFromClient', {
+          socket.emit('notificationFromClient', { //send a message to reciever
             userIdFrom:window.location.href.split('/')[3],
             userIdTo: "21f65c0f-26a3-4a06-ba14-4c6eda269e3f",
             socketId:socket.id,
@@ -56,6 +63,16 @@
             topic:"Test",
             message:input.value
           });
+          socket.emit('notificationFromClientToAll', { //send a message to reciever
+            userIdFrom:window.location.href.split('/')[3],
+            socketId:socket.id,
+            sockdddetId:"ffffffff",
+            url:window.location.href,
+            topic:"Test",
+            message:input.value+"......."
+          });
+          console.log("---------------socket.id",socket.id)
+
 
           socket.emit('count notification', "message count");
 
@@ -74,14 +91,14 @@
       socket.on('notification from server', function(msg) {
         console.log("notification from server",msg)
         var item = document.createElement('li');
-        item.textContent = "topic:"+msg.topic+"/message:"+msg.message+"/from:"+msg.userIdFrom+"/count"+msg;
+        item.textContent = "topic:"+msg.topic+"/message:"+msg.message+"/from:"+msg.userIdFrom;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
       });
 
 
       socket.on('count notification', function(count) {
-        console.log("count notification",count)
+        console.log("count notification--------->",count)
         var item = document.createElement('li');
         item.textContent = count;
         messages.appendChild(item);
@@ -89,7 +106,7 @@
       });
 
       socket.on('get All notification', function(notif) {
-        console.log("get All notification",notif)
+        console.log("get All notification--------->",notif)
         var item = document.createElement('li');
         item.textContent = notif;
         messages.appendChild(item);
@@ -97,7 +114,7 @@
       });
 
       socket.on('read notification', function(notif) {
-        console.log("read notification",notif)
+        console.log("read notification--------->",notif)
         var item = document.createElement('li');
         item.textContent = notif;
         messages.appendChild(item);
@@ -105,7 +122,7 @@
       });
 
       socket.on('get one notification', function(notif) {
-        console.log("get one notification",notif)
+        console.log("get one notification--------->",notif)
         var item = document.createElement('li');
         item.textContent = notif;
         messages.appendChild(item);
