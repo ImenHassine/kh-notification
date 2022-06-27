@@ -127,21 +127,28 @@
 
 
 ///////////////////////////////
+const cors = require("cors");
+
+var corsOptions = {
+  origin: "http://localhost:3000",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["my-custom-header"],
+  credentials: true
+};
+// //////////
+
 const app = require('express')();
 const http = require('http').Server(app);
-const io = require('socket.io')(http);
-const port = process.env.PORT || 5014;
+const io = require('socket.io')(http,{
+  cors: corsOptions
+});
+const port = process.env.PORT || 5015;
 
 app.get('/:id', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-// //////////
-const cors = require("cors");
 
-var corsOptions = {
-  origin: "http://localhost:5014",
-};
 
 const db = require("./src/models");
 db.sequelize.sync({alter: true});
@@ -243,6 +250,8 @@ io.on('connection', (socket) => { //when refresh fenetre create new socket
     //////////////////save notification//////////////////
     const infoArr = [];
     for(var i = 0; i < allUsers.length; i++ ){
+      console.log("---------------------***********************************************************************************************************")
+
       if(allUsers[i].userId !== msg.userIdFrom){ 
         var notificationJson = {
           // userIdFrom: msg.userIdFrom,
@@ -269,13 +278,15 @@ io.on('connection', (socket) => { //when refresh fenetre create new socket
       }
     }
     for(var i = 0; i < infoArr.length; i++ ){
+      console.log("--------------------notif count-***********************************************************************************************************")
+
       const socketID = infoArr[i].socketId;
       Notification.findAndCountAll({
         where: { 
           [Op.and]: [{ deleted: 0 ,userIdTo: infoArr[i].userId ,read:false}] },
         attributes: { exclude: ["deleted", "deletedBy"] },
       }).then((dataNotif) => {
-        var count = dataNotif.count;
+        var count = dataNotif.count+1;
         console.log("socketID",socketID)
 
         socket.broadcast.to(socketID).emit( 'count notification', count);
@@ -324,9 +335,6 @@ io.on('connection', (socket) => { //when refresh fenetre create new socket
 
   }
   console.log(msg)
-  console.log("notificationJson",notificationJson)
-  console.log("socket.id",socket.id)
-
 //user connected or not connected will save the notification 
   Notification.create(notificationJson);
   
@@ -337,8 +345,6 @@ io.on('connection', (socket) => { //when refresh fenetre create new socket
       var count = allUsers[i].count++
       notificationJson.count = count
       infoArr.push(allUsers[i]);
-  console.log(`in iciiiiiiiiiiiiiii `)
-
       socket.broadcast.to(allUsers[i].socketId).emit( 'notification from server', notificationJson );
       // socket.broadcast.to(allUsers[i].socketId).emit( 'count notification', allUsers[i].count );
       console.log(`Notification has been sent to ${allUsers[i].socketId}`)
@@ -352,7 +358,8 @@ io.on('connection', (socket) => { //when refresh fenetre create new socket
         [Op.and]: [{ deleted: 0 ,userIdTo: infoArr[i].userId ,read:false}] },
       attributes: { exclude: ["deleted", "deletedBy"] },
     }).then((dataNotif) => {
-      var count = dataNotif.count
+      var count = dataNotif.count+1;
+      console.log(`count `,count)
       socket.broadcast.to(socketID).emit( 'count notification', count);
     })
   }
