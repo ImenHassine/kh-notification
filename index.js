@@ -130,7 +130,7 @@
 const cors = require("cors");
 
 var corsOptions = {
-  origin: "http://localhost:3000",
+  origin: "*",
   methods: ["GET", "POST"],
   allowedHeaders: ["my-custom-header"],
   credentials: true
@@ -159,6 +159,7 @@ const UserConnected = db.userConnected;
 // const { getPagination, getPagingData } = require("../helpers/pagination");
 const Op = db.Sequelize.Op;
 
+const {getNumberOfNotification} = require("./src/services/getNumberOfNotification");
 
 app.use(cors(corsOptions));
 var allUsers = [];
@@ -236,6 +237,7 @@ io.on('connection', (socket) => { //when refresh fenetre create new socket
 
   })
 
+  // socket.emit( 'count notification', 0);
 
   socket.on('notificationFromClientToAll', msg => {
   console.log(`-----------------notificationFromClientToAll-----------------------------------------------------------------`)
@@ -451,13 +453,14 @@ io.on('connection', (socket) => { //when refresh fenetre create new socket
     }
     });
 
-
+  // getNumberOfNotification(socket, allUsers);
   socket.on('count notification', msg => {
   console.log(`-----------------count notification-----------------------------------------------------------------`)
 
     console.log(`count notification `)
     ////////////////////////////////////////
   console.log(`coun-t `,msg)
+  console.log(`allUsers count`,allUsers)
 
     for(var i = 0; i < allUsers.length; i++ ){
       if(allUsers[i].socketId === socket.id){
@@ -467,20 +470,27 @@ io.on('connection', (socket) => { //when refresh fenetre create new socket
         console.log(`allUsers[i].socketId `,allUsers[i].socketId)
         console.log(`allUsers[i] `,allUsers[i])
 
+        if(user){
+          Notification.findAndCountAll({
+            where: { 
+              [Op.and]: [{ deleted: 0 ,userIdTo: user ,read:false}] },
+                   
+            attributes: { exclude: ["deleted", "deletedBy"] },
+          }).then((dataNotif) => {
+        console.log("dataNotif.count",dataNotif.count)
+        console.log("socket.id",socket.id)
+        var count = dataNotif.count
+        // allUsers[i].count = dataNotif.count 
+        socket.emit( 'count notification', count);
+      
+          })
+        }else{
+        console.log("user is empty ----> send userId svp")
 
-        Notification.findAndCountAll({
-          where: { 
-            [Op.and]: [{ deleted: 0 ,userIdTo: user ,read:false}] },
-                 
-          attributes: { exclude: ["deleted", "deletedBy"] },
-        }).then((dataNotif) => {
-      console.log("dataNotif.count",dataNotif.count)
-      console.log("socket.id",socket.id)
-      var count = dataNotif.count
-      // allUsers[i].count = dataNotif.count 
-      socket.emit( 'count notification', count);
-    
-        })
+        socket.emit( 'count notification', 0);
+        }
+
+
 
   
       }
@@ -511,7 +521,10 @@ io.on('connection', (socket) => { //when refresh fenetre create new socket
           Notification.findAndCountAll({
             where: { 
               [Op.and]: [{ deleted: 0 ,userIdTo: user }] },
-                   
+            order:[  [
+              'createdAt',
+              'DESC',
+            ]],
             attributes: { exclude: ["deleted", "deletedBy"] },
           }).then((dataNotif) => {
         console.log("dataNotif.count",dataNotif.count)
